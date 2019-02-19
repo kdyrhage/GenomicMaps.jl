@@ -11,95 +11,21 @@ function drawgenome(chr; kwargs...)
         genecolours = [get(p[:colourmap], c, p[:defaultcolour]) for c in vcat(p[:colourfunction](g))]
         drawgene(p, g, colours = genecolours)
     end
+    ### Draw legend
+    drawlegend(p)
+    ### Draw title
     sethue("black")
     fontsize(28)
     text(chr.name, Point(p[:xmax] / 2, 5), halign = :center, valign = :top)
+    ### Draw extra
+    p[:extrafunction](p)
+    ### Finish
     finish()
-    return nothing
-end
-
-
-"""
-    initialise(chr; kwargs...)
-
-Initialise drawing and return a `Dict` containing properties.
-"""
-function initialise(chr; drawingsize = "A0landscape",
-        outfile = "genomap.svg", nbreaks = 30, textangle = -pi/6,
-        numberstyle = 'k', defaultcolour = "gray75", arrowwidth = 12,
-        genetextsize = 15, colourfunction = x -> x.feature, colourmap = Dict(),
-        features = ["CDS", "rRNA", "tRNA"],
-        genetextfunction = x -> get(x, :gene, ""))
-    (xmax, ymax) = drawingdimensions(drawingsize)
-    drawing = Drawing(xmax, ymax, outfile)
-    background("white")
-    p = Dict()
-    p[:genetextsize] = genetextsize
-    p[:chromosome] = chr
-    p[:drawing] = drawing
-    p[:outfile] = outfile
-    p[:interval] = Int(round(length(chr.sequence) / nbreaks, RoundUp))
-    p[:textangle] = textangle
-    breaks = 1:p[:interval]:length(chr.sequence)
-    left = Point[]
-    right = Point[]
-    @inbounds for i in 1:length(breaks)
-        push!(left,  Point(0.02 * xmax, i * ymax / (length(breaks) + 1)))
-        push!(right, Point(0.93 * xmax, i * ymax / (length(breaks) + 1)))
-    end
-    lastpoint = between(left[end], right[end], (length(chr.sequence) - breaks[end]) / (p[:interval] - 1))
-    p[:breaks] = breaks
-    p[:left] = left
-    p[:right] = right
-    p[:lastpoint] = lastpoint
-    p[:numberstyle] = numberstyle
-    p[:offset_y] = ymax / 150
-    p[:defaultcolour] = defaultcolour
-    p[:arrowwidth] = arrowwidth
-    p[:xmax] = xmax
-    p[:ymax] = ymax
-    p[:genetextoffset] = -p[:arrowwidth] - ymax / 20nbreaks
-    p[:features] = features
-    p[:colourfunction] = colourfunction
-    if !isempty(colourmap)
-        p[:colourmap] = colourmap
-    else
-        p[:colourmap] = generatecolours(p)
-    end
-    ### genetextfunction can be either a function that, given a Gene, returns
-    # the text to plot above the gene, or a Symbol showing which property of the
-    # gene to plot
-    if genetextfunction isa Symbol
-        p[:genetextfunction] = g -> getproperty(g, genetextfunction, "")
-    else
-        p[:genetextfunction] = genetextfunction
+    if get(kwargs, :annotate, true)
+        annotatesvg(p)
     end
     return p
 end
-
-
-function generatecolours(p)
-    chr = p[:chromosome]
-    features = p[:features]
-    plottedgenes = @genes(chr, :feature in features)
-    categories = unique(vcat(p[:colourfunction].(plottedgenes)...))
-    colours = Dict()
-    cmap = Colors.distinguishable_colors(length(categories))
-    for i in eachindex(categories)
-        colours[categories[i]] = cmap[i]
-    end
-    return colours
-end
-
-
-# function initialise(chr::Chromosome; kwargs...)
-#     (xmax, ymax) = drawingdimensions(get!(kwargs, :drawingsize, "A0landscape"))
-#     drawing = Drawing(xmax, ymax, get!(kwargs, :outfile, "genomap.svg"))
-#     background("white")
-#     kwargs[:chromosome] = chr
-#     get!(kwargs, :nbreaks, 35)
-#     get!(kwargs, :textangle, -pi/6)
-# end
 
 
 function formatnumber(p, val::Int)
@@ -227,4 +153,24 @@ function drawingdimensions(drawingsize::AbstractString)
         xmax, ymax = Luxor.paper_sizes[drawingsize]
     end
     return (xmax, ymax)
+end
+
+
+function drawlegend(p)
+    gsave()
+    if !p[:drawlegend] #
+        return nothing
+    end
+    translate(p[:xmax] * p[:rightlimit] * 1.02, p[:ymax] * 0.1)
+    setline(3)
+    for (category, colour) in p[:colourmap]
+        setcolor("black")
+        text(string(category), Point(30, 0), valign = :middle)
+        box(Point(0, 0), 30, 30, :path)
+        strokepreserve()
+        setcolor(colour)
+        fillpath()
+        translate(0, 50)
+    end
+    grestore()
 end

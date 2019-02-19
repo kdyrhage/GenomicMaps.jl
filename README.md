@@ -78,7 +78,6 @@ cogcolours = Dict("B"=>RGB{Float64}(1.0,0.630714,0.576563),
 # The output can be customised, see src/initialise.jl for all options. Here I
 # provide a function that will be run on each gene to determine its colour:
 colourby_cog = g -> unique(String.(split(get(g, :cog, ""), "")))
-drawgenome(chr; colourfunction = colourby_cog, annotate = true)
 drawgenome(chr;
     outfile = "example.svg",
     colourmap = cogcolours,

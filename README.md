@@ -11,40 +11,19 @@ using GenomicMaps
 
 
 # You can add any kind of annotation that you want to display.
-# Here I add the results from InterProScan:
-function addinterproscan!(chr, filename)
-    for line in split.(readlines(filename), Ref('\t'))
-        g = first(chr.genes[(chr.genedata[:feature] .== "CDS") .& (chr.genedata[:locus_tag] .== line[1])])
-        if length(line) < 13 && isempty(line[6])
-            pushproperty!(g, Symbol(line[4]), String(line[5]))
-        elseif length(line) < 13
-            pushproperty!(g, Symbol(line[4]), "$(line[5]): $(line[6])")
-        else
-            pushproperty!(g, Symbol(line[4]), "$(line[5]): $(line[13])")
-        end
-    end
-    delete!(chr.genedata, :SUPERFAMILY)
-    delete!(chr.genedata, :MobiDBLite)
-    delete!(chr.genedata, :Gene3D)
-end
-
-
-# ... and COGs:
+# Here, I add COG annotation:
 function addcogs!(chr, filename)
-    chr.genes.cog .= ""
-    @progress for line in split.(readlines(filename), Ref('\t'))
-        g = first(@genes(chr, :feature == "CDS", :locus_tag == line[1]))
-        if occursin(r"\w", line[2])
-            g.cog = replace(line[2], r"\W" => s"")
+    cogs = split.(readlines(filename), Ref('\t'))
+    i = 1
+    for gene in @genes(chr, :feature == "CDS")
+        if gene.locus_tag == cogs[i][1]
+            if occursin(r"\w", cogs[i][2])
+                gene.cog = cogs[i][2]
+            end
+            i += 1
         end
     end
-    @genes(chr, isempty(:cog)).cog .= missing
 end
-
-
-chr = readgbk("GCA_000005845.2_ASM584v2_genomic.gbff.gz")[1]
-addinterproscan!(chr, "interproresults.tsv")
-addcogs!(chr, "cogresults.tsv")
 
 
 # Colour scheme for COG categories:
@@ -75,11 +54,19 @@ cogcolours = Dict("B"=>RGB{Float64}(1.0,0.630714,0.576563),
      "S"=>RGB{Float64}(0.236943,0.0166779,0.407047),
      "J"=>RGB{Float64}(1.0,0.389569,0.336934))
 
+
+# First download annotations for E. coli:
+download("ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/000/005/845/GCA_000005845.2_ASM584v2/GCA_000005845.2_ASM584v2_genomic.gbff.gz", "ecoli.gbk.gz")
+
+# Then read the annotations and add COGs:
+chr = readgbk("ecoli.gbk.gz")[1]
+addcogs!(chr, "ecoli_cogs.tsv")
+
 # The output can be customised, see src/initialise.jl for all options. Here I
 # provide a function that will be run on each gene to determine its colour:
 colourby_cog = g -> unique(String.(split(get(g, :cog, ""), "")))
 drawgenome(chr;
-    outfile = "example.svg",
+    outfile = "ecoli.svg",
     colourmap = cogcolours,
     colourfunction = colourby_cog,
     annotate = true,

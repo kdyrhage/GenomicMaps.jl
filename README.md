@@ -3,7 +3,7 @@ Julia package for visualising genomic data.
 
 ## Example
 Hover over a gene to see annotations.
-![Example map](../assets/ecoli.svg?raw=true)
+![Example map](../assets/ecoli.svg)
 
 ```julia
 using GenomicAnnotations

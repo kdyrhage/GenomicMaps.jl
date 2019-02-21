@@ -21,7 +21,7 @@ function drawgenome(chr; kwargs...)
     p[:extrafunction](p)
     ### Finish
     finish()
-    if get(kwargs, :annotate, true) && occursin(r"\.svg$", outfile)
+    if get(kwargs, :annotate, true) && occursin(r"\.svg$", p[:outfile])
         annotatesvg(p)
     end
     return p

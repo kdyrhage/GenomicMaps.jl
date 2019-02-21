@@ -1,5 +1,6 @@
 using GenomicAnnotations
 using GenomicMaps
+using ColorTypes
 
 
 # You can add any kind of annotation that you want to display.

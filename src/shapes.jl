@@ -142,7 +142,7 @@ function striped(f, p, start, stop, colours; kwargs...)
         elseif start.x < stop.x
             f(p, stop - (arrowheadlength * cos(arrowheadangle), 0), stop; kwargs...)
         elseif start.x > stop.x
-            f(p, stop, stop + (arrowheadlength * cos(arrowheadangle), 0); kwargs...)
+            f(p, stop + (arrowheadlength * cos(arrowheadangle), 0), stop; kwargs...)
         end
         clipreset()
     end

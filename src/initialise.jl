@@ -7,7 +7,8 @@ function initialise(chr; drawingsize = "A0landscape",
         outfile = "genomap.svg", nbreaks = 30, textangle = -pi/6,
         numberstyle = 'k', defaultcolour = "gray75", arrowwidth = 12,
         genetextsize = 15, colourfunction = x -> x.feature, colourmap = Dict(),
-        features = ["CDS", "rRNA", "tRNA"], drawlegend = true,
+        features = ["CDS", "rRNA", "tRNA"], legend = :categorical,
+        legend_high = "1.0", legend_low = "0.0",
         rightlimit = 0.95, leftlimit = 0.01, annotate = true,
         extrafunction = (p) -> nothing,
         genetextfunction = x -> get(x, :gene, ""))
@@ -42,7 +43,9 @@ function initialise(chr; drawingsize = "A0landscape",
     p[:arrowwidth] = arrowwidth
     p[:xmax] = xmax
     p[:ymax] = ymax
-    p[:drawlegend] = drawlegend
+    p[:legend] = legend
+    p[:legend_high] = legend_high
+    p[:legend_low] = legend_low
     p[:genetextoffset] = -p[:arrowwidth] - ymax / 20nbreaks
     p[:features] = features
     p[:colourfunction] = colourfunction

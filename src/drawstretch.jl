@@ -8,7 +8,12 @@ function drawgenome(chr; kwargs...)
     features = p[:features]
     for g in @genes(chr, :feature in features)
         drawgenetext(p, g, p[:genetextfunction](g))
-        genecolours = [get(p[:colourmap], c, p[:defaultcolour]) for c in vcat(p[:colourfunction](g))]
+        cv = vcat(p[:colourfunction](g))
+        if eltype(cv) <: AbstractFloat
+            genecolours = [get(p[:colourmap], c) for c in cv]
+        else
+            genecolours = [get(p[:colourmap], c, p[:defaultcolour]) for c in cv]
+        end
         drawgene(p, g, colours = genecolours)
     end
     ### Draw legend
@@ -158,9 +163,17 @@ end
 
 function drawlegend(p)
     gsave()
-    if !p[:drawlegend] #
+    if p[:legend] == :categorical
+        drawlegend_categorical(p)
+    elseif p[:legend] == :continuous
+        drawlegend_continuous(p)
+    else
         return nothing
     end
+    grestore()
+end
+
+function drawlegend_categorical(p)
     translate(p[:xmax] * p[:rightlimit] * 1.02, p[:ymax] * 0.1)
     setline(3)
     for (category, colour) in p[:colourmap]
@@ -172,5 +185,20 @@ function drawlegend(p)
         fillpath()
         translate(0, 50)
     end
-    grestore()
+end
+
+
+function drawlegend_continuous(p)
+    translate(p[:xmax] * p[:rightlimit] * 1.02, p[:ymax] * 0.25)
+    setcolor("black")
+    fontsize(25)
+    text(p[:legend_high], Point(40, 0))
+    barheight = p[:ymax] / 2length(p[:colourmap])
+    for (i, c) in enumerate(reverse(p[:colourmap]))
+        setcolor(c)
+        box(Point(0,0), 50, barheight+2, :fill)
+        translate(0, barheight)
+    end
+    setcolor("black")
+    text(p[:legend_low], Point(40, 0))
 end

@@ -84,4 +84,5 @@ Some keywords that can be given to `drawgenome` to customise the output are:
 - `defaultcolour`: the default colour that is used for genes that do not have a specified colour in `colourmap`.
 - `nbreaks`: an `Int` determining how many lines will be used to display the genome).
 - `drawingsize`: determines the size of the output. Can be a `String` such as `"A4"`, `"A0landscape"`, `"1000x1000"`, or a `Tuple` (e.g. `(1000, 1000)`).
+- `legend`: can be `:categorical`, `:continuous`, or `:none`.
 ... and more (see `src/initialise.jl`)

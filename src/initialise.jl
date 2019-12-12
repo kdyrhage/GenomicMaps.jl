@@ -7,7 +7,7 @@ function initialise(chr; drawingsize = "A0landscape",
         outfile = "genomap.svg", nbreaks = 30, textangle = -pi/6,
         numberstyle = 'k', defaultcolour = "gray75", arrowwidth = 12,
         genetextsize = 15, colourfunction = x -> x.feature, colourmap = Dict(),
-        features = ["CDS", "rRNA", "tRNA"], legend = :categorical,
+        features = [:CDS, :rRNA, :tRNA], legend = :categorical,
         legend_high = "1.0", legend_low = "0.0",
         rightlimit = 0.95, leftlimit = 0.01, annotate = true,
         extrafunction = (p) -> nothing,
@@ -70,7 +70,7 @@ end
 function generatecolours(p)
     chr = p[:chromosome]
     features = p[:features]
-    plottedgenes = @genes(chr, :feature in features)
+    plottedgenes = @genes(chr, feature(gene) in features)
     categories = unique(vcat(p[:colourfunction].(plottedgenes)...))
     colours = Dict()
     cmap = Colors.distinguishable_colors(length(categories))

@@ -6,7 +6,7 @@ function drawgenome(chr; kwargs...)
     setline(p[:arrowwidth])
     fontsize(p[:genetextsize])
     features = p[:features]
-    for g in @genes(chr, :feature in features)
+    for g in @genes(chr, feature(gene) in features)
         drawgenetext(p, g, p[:genetextfunction](g))
         cv = vcat(p[:colourfunction](g))
         if eltype(cv) <: AbstractFloat
@@ -70,7 +70,7 @@ end
 
 
 function genecoordinates(p, gene)
-    return (coordinates(p, gene.locus.position.start), coordinates(p, gene.locus.position.stop))
+    return (coordinates(p, locus(gene).position.start), coordinates(p, locus(gene).position.stop))
 end
 
 
@@ -85,10 +85,10 @@ function drawgene(p, gene; colours = [p[:defaultcolour]])
             striped(genearrow, p, p1, p2, colours)
         end
     else    # The gene does not fit on one line
-        position = mean(gene.locus.position)
+        position = mean(locus(gene).position)
         genebreak = inbreak(p, position)
         genemidpoint = between(p[:left][genebreak], p[:right][genebreak], (position - p[:breaks][genebreak]) / (p[:interval] - 1))
-        breakrange = inbreak(p, gene.locus.position.start):inbreak(p, gene.locus.position.stop)
+        breakrange = inbreak(p, locus(gene).position.start):inbreak(p, locus(gene).position.stop)
         if iscomplement(gene)
             striped(partialarrow_stop, p, p[:right][first(breakrange)], p1, colours)
             for r in breakrange[2:end-1]
@@ -116,7 +116,7 @@ end
 function drawgenetext(p, gene, s)
     gsave()
     sethue("black")
-    position = mean(gene.locus.position)
+    position = mean(locus(gene).position)
     genebreak = inbreak(p, position)
     genemidpoint = between(p[:left][genebreak], p[:right][genebreak], (position - p[:breaks][genebreak]) / (p[:interval] - 1))
     textpoint = genemidpoint + (0, p[:genetextoffset])

@@ -4,7 +4,7 @@ function annotatesvg(p)
 
     chr = p[:chromosome]
     features = p[:features]
-    genes = @genes(chr, :feature in features)
+    genes = @genes(chr, feature(gene) in features)
 
     ingenes = false
     stripedgene = false

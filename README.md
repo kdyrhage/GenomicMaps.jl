@@ -1,6 +1,14 @@
 # GenomicMaps.jl
 Julia package for visualising genomic data.
 
+## Installation
+GenomicMaps depends on [BioSequences](https://github.com/BioJulia/BioSequences.jl), which is registered in [BioJuliaRegistry](https://github.com/BioJulia/BioJuliaRegistry). To install it you must first add the registry to Julia's package manager:
+```julia
+julia>]
+pkg> registry add https://github.com/BioJulia/BioJuliaRegistry.git
+pkg> add GenomicMaps
+```
+
 ## Example
 Hover over a gene to see annotations.
 

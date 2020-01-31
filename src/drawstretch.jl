@@ -3,7 +3,7 @@ function drawgenome(chr; kwargs...)
     ### Draw intervals
     drawintervals(p)
     ### Draw genes
-    setline(p[:arrowwidth])
+    setline(p[:linewidth])
     fontsize(p[:genetextsize])
     features = p[:features]
     for g in @genes(chr, feature(gene) in features)
@@ -76,7 +76,7 @@ end
 
 function drawgene(p, gene; colours = [p[:defaultcolour]])
     gsave()
-    setline(p[:arrowwidth])
+    setline(p[:genethicknessfunction](gene))
     (p1, p2) = genecoordinates(p, gene)
     if p1.y == p2.y # The gene fits on one line
         if iscomplement(gene)

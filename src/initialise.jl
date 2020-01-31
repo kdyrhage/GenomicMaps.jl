@@ -5,12 +5,13 @@ Initialise drawing and return a `Dict` containing properties.
 """
 function initialise(chr; drawingsize = "A0landscape",
         outfile = "genomap.svg", nbreaks = 30, textangle = -pi/6,
-        numberstyle = 'k', defaultcolour = "gray75", arrowwidth = 12,
+        numberstyle = 'k', defaultcolour = "gray75", arrowwidth = 12, linewidth = 1,
         genetextsize = 15, colourfunction = x -> x.feature, colourmap = Dict(),
         features = [:CDS, :rRNA, :tRNA], legend = :categorical,
         legend_high = "1.0", legend_low = "0.0",
         rightlimit = 0.95, leftlimit = 0.01, annotate = true,
         extrafunction = (p) -> nothing,
+        genethicknessfunction = nothing,
         genetextfunction = x -> get(x, :gene, ""))
     (xmax, ymax) = drawingdimensions(drawingsize)
     drawing = Drawing(xmax, ymax, outfile)
@@ -41,6 +42,7 @@ function initialise(chr; drawingsize = "A0landscape",
     p[:offset_y] = ymax / 150
     p[:defaultcolour] = defaultcolour
     p[:arrowwidth] = arrowwidth
+    p[:linewidth] = linewidth
     p[:xmax] = xmax
     p[:ymax] = ymax
     p[:legend] = legend
@@ -49,6 +51,11 @@ function initialise(chr; drawingsize = "A0landscape",
     p[:genetextoffset] = -p[:arrowwidth] - ymax / 20nbreaks
     p[:features] = features
     p[:colourfunction] = colourfunction
+    if isnothing(genethicknessfunction)
+        p[:genethicknessfunction] = g -> p[:linewidth]
+    else
+        p[:genethicknessfunction] = genethicknessfunction
+    end
     if !isempty(colourmap)
         p[:colourmap] = colourmap
     else

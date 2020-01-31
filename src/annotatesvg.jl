@@ -25,6 +25,7 @@ function annotatesvg(p)
             catch
             end
         # Second half of spanning genes
+    # elseif occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
     elseif occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
             annotation = replace(replace(string(genes[atgene]), r"^ +" => ""), r"\n +" => "\n")
             line = line[1:end - 2] * ">\n<title>" * annotation * "</title></path>\n"
@@ -59,13 +60,16 @@ end
 
 
 function isnewgene(line)
-    if occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line) ||
+    # if occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line) ||
+    if occursin(r"<path style=\".*\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line) ||
         # First half of spanning genes on + strand
-        occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
+        # occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
+        occursin(r"<path style=\".*\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
         return true
     end
         # Second half of spanning genes on - strand
-    if occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
+    # if occursin(r"<path style=\"fill-rule:nonzero;fill:rgb(.*);fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke:rgb(.*);stroke-opacity:1;stroke-miterlimit:10;\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
+    if occursin(r"<path style=\".*\" d=\"M \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ L \S+ \S+ \"", line)
         c = match(r"d=\"M (\S+) (\S+) L (\S+) (\S+) L (\S+) (\S+) L (\S+) (\S+) L (\S+) (\S+)", line).captures
         if c[2] == c[10]
             return true

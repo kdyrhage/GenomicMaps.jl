@@ -14,6 +14,7 @@ function drawgenome(chr; kwargs...)
         else
             genecolours = [get(p[:colourmap], c, p[:defaultcolour]) for c in cv]
         end
+        isempty(genecolours) && (genecolours = [p[:defaultcolour]])
         drawgene(p, g, colours = genecolours)
     end
     ### Draw legend

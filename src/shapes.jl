@@ -20,7 +20,7 @@ function genearrow(p, start, stop)
         Point(0, -p[:arrowwidth] / 2)
     ]
     setlinejoin("miter")
-    setlinecap("butt")
+    setlinecap("square")
     poly(points, :fillpreserve)
     sethue("black")
     # setline(strokethickness)

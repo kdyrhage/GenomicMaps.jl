@@ -3,7 +3,7 @@ const arrowheadlength = 13
 const strokethickness = 1.0
 
 
-function genearrow(p, start, stop)
+function genearrow(p, start, stop, colour)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -19,17 +19,14 @@ function genearrow(p, start, stop)
         Point(0, p[:arrowwidth] / 2),
         Point(0, -p[:arrowwidth] / 2)
     ]
-    setlinejoin("miter")
-    setlinecap("square")
-    poly(points, :fillpreserve)
-    sethue("black")
-    # setline(strokethickness)
-    strokepath()
+    poly(points, :strokepreserve)
+    setcolor(colour)
+    fillpath()
     grestore()
 end
 
 
-function partialarrow_start(p, start, stop)
+function partialarrow_start(p, start, stop, colour)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -41,15 +38,14 @@ function partialarrow_start(p, start, stop)
         Point(linelength, p[:arrowwidth] / 2),
         Point(0, p[:arrowwidth] / 2)
     ]
-    poly(points, :fillpreserve)
-    sethue("black")
-    # setline(strokethickness)
-    strokepath()
+    poly(points, :strokepreserve)
+    setcolor(colour)
+    fillpath()
     grestore()
 end
 
 
-function partialarrow_stop(p, start, stop)
+function partialarrow_stop(p, start, stop, colour)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -64,17 +60,14 @@ function partialarrow_stop(p, start, stop)
         Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), p[:arrowwidth] / 2),
         Point(0, p[:arrowwidth] / 2)
     ]
-    setlinejoin("miter")
-    setlinecap("butt")
-    poly(points, :fillpreserve)
-    sethue("black")
-    # setline(strokethickness)
-    strokepath()
+    poly(points, :strokepreserve)
+    setcolor(colour)
+    fillpath()
     grestore()
 end
 
 
-function partialarrow_mid(p, start, stop)
+function partialarrow_mid(p, start, stop, colour)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -129,20 +122,19 @@ end
 
 
 function striped(f, p, start, stop, colours; kwargs...)
-   gsave()
+    gsave()
     for i in 1:length(colours)
         if i > 1
             stripes(p, start, stop, length(colours) - 1, i)
         end
-        sethue(colours[i])
         if start.x < stop.x && start.x < (stop.x - (arrowheadlength * cos(arrowheadangle)))
-            f(p, start, stop; kwargs...)
+            f(p, start, stop, colours[i]; kwargs...)
         elseif start.x > stop.x && start.x > (stop.x + (arrowheadlength * cos(arrowheadangle)))
-            f(p, start, stop; kwargs...)
+            f(p, start, stop, colours[i]; kwargs...)
         elseif start.x < stop.x
-            f(p, stop - (arrowheadlength * cos(arrowheadangle), 0), stop; kwargs...)
+            f(p, stop - (arrowheadlength * cos(arrowheadangle), 0), stop, colours[i]; kwargs...)
         elseif start.x > stop.x
-            f(p, stop + (arrowheadlength * cos(arrowheadangle), 0), stop; kwargs...)
+            f(p, stop + (arrowheadlength * cos(arrowheadangle), 0), stop, colours[i]; kwargs...)
         end
         clipreset()
     end

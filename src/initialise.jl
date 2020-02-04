@@ -11,7 +11,8 @@ function initialise(chr; drawingsize = "A0landscape",
         legend_high = "1.0", legend_low = "0.0",
         rightlimit = 0.95, leftlimit = 0.01, annotate = true,
         extrafunction = (p) -> nothing,
-        genethicknessfunction = nothing,
+        genelinethickness = nothing,
+        genelinecolour = nothing,
         genetextfunction = x -> get(x, :gene, ""))
     (xmax, ymax) = drawingdimensions(drawingsize)
     drawing = Drawing(xmax, ymax, outfile)
@@ -51,10 +52,19 @@ function initialise(chr; drawingsize = "A0landscape",
     p[:genetextoffset] = -p[:arrowwidth] - ymax / 20nbreaks
     p[:features] = features
     p[:colourfunction] = colourfunction
-    if isnothing(genethicknessfunction)
-        p[:genethicknessfunction] = g -> p[:linewidth]
+    if isnothing(genelinethickness)
+        p[:genelinethickness] = g -> p[:linewidth]
+    elseif !(genelinethickness isa Function)
+        p[:genelinethickness] = g -> genelinethickness
     else
-        p[:genethicknessfunction] = genethicknessfunction
+        p[:genelinethickness] = genelinethickness
+    end
+    if isnothing(genelinecolour)
+        p[:genelinecolour] = g -> "black"
+    elseif !(genelinecolour isa Function)
+        p[:genelinecolour] = g -> genelinecolour
+    else
+        p[:genelinecolour] = genelinecolour
     end
     if !isempty(colourmap)
         p[:colourmap] = colourmap

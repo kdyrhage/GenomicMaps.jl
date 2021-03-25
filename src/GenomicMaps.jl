@@ -7,11 +7,15 @@ using GenomicAnnotations: AbstractGene, Gene
 using Statistics
 using Printf: @sprintf
 
-export drawgenome
 
 include("initialise.jl")
 include("shapes.jl")
 include("drawstretch.jl")
+export drawgenome
 include("annotatesvg.jl")
+include("drawplasmid.jl")
+export drawplasmid
+include("genomecomparison.jl")
+export drawcomparison
 
 end #module

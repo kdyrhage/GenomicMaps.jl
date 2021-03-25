@@ -64,3 +64,38 @@ drawgenome(chr;
     colourfunction = colourby_cog,
     annotate = true,
     nbreaks = 40)
+
+
+## Plasmid
+plasmid = readgbk(joinpath(@__DIR__, "plasmid", "plasmid.gbk"))[1]
+
+begin
+    # Create a dictionary specifying genes that should be coloured
+    cdict = Dict()
+    for gene in @genes(plasmid, CDS, :product == "hypothetical protein")
+        cdict[gene.locus_tag] = RGBA(1.,1.,1.,0.1)
+    end
+    # Create an array containing annotations
+    annotations = []
+    for gene in @genes(plasmid, CDS)
+        if gene.product == "hypothetical protein"
+            push!(annotations, "")
+        else
+            push!(annotations, gene.product)
+        end
+    end
+    # Create a dictionary with group annotations
+    genegroups = Dict(
+        10:13 => (text = "Kunkecin synthesis and transport cluster", placement = :outer, offset = 50),
+        14:17 => (text = "Lantibiotic immunity cluster", placement = :inner, offset = 50)
+    )
+end
+
+drawplasmid(plasmid;
+    outfile = joinpath(@__DIR__, "plasmid.png"),
+    drawingsize = (1500, 1000),
+    figureoffset = (50, 0),
+    annotations = annotations,
+    colors = cdict,
+    genegroups = genegroups,
+    title = plasmid.name)

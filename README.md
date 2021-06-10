@@ -2,18 +2,21 @@
 Julia package for visualising genomic data.
 
 ## Installation
-GenomicMaps depends on [BioSequences](https://github.com/BioJulia/BioSequences.jl), which is registered in [BioJuliaRegistry](https://github.com/BioJulia/BioJuliaRegistry). To install it you must first add the registry to Julia's package manager:
 ```julia
 julia>]
-pkg> registry add https://github.com/BioJulia/BioJuliaRegistry.git
 pkg> add GenomicMaps
 ```
 
-## Example
+## Usage
+There are currently three plotting functions: `drawgenome` (see example below), `drawplasmid` (for small circular plasmids), and `compareregions` for showing synteny and sequence similarity between genomes or regions.
+
+
+## Genome maps
+
+### Example
 Hover over a gene to see annotations.
 
 ![Example map](https://raw.githubusercontent.com/kdyrhage/GenomicMaps.jl/assets/ecoli.svg?sanitize=true)
-
 
 
 ```julia
@@ -94,3 +97,36 @@ Some keywords that can be given to `drawgenome` to customise the output are:
 - `drawingsize`: determines the size of the output. Can be a `String` such as `"A4"`, `"A0landscape"`, `"1000x1000"`, or a `Tuple` (e.g. `(1000, 1000)`).
 - `legend`: can be `:categorical`, `:continuous`, or `:none`.
 ... and more (see `src/initialise.jl`)
+
+
+## Plasmid maps
+
+![Example plasmid](https://raw.githubusercontent.com/kdyrhage/GenomicMaps.jl/assets/pKUNFF306.png?sanitize=true)
+
+```julia
+using GenomicAnnotations
+
+download("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nucleotide&id=1899346924&rettype=gb&retmode=text", "pKUNFF306.gbk")
+chr = readgbk("pKUNFF306.gbk")[1]
+
+### Create an array containing annotations
+annotations = [get(gene, :gene, gene.product) for gene in @genes(chr, CDS)]
+replace!(annotations, "hypothetical protein" => "")
+
+### Create a Dict with Genes as keys and colors as values
+cdict = Dict()
+for gene in @genes(chr, CDS, :product != "hypothetical protein")
+    cdict[gene.locus_tag] = RGBA(.5,.5,.5,.5)
+end
+
+### Create a Dict with gene cluster annotations
+genegroups = Dict(14:17 => (text = "Lantibiotic resistance", placement = :inner),
+                  10:13 => (text = "Lantibiotic biogenesis and transport", placement = :outer))
+
+drawplasmid(chr; outfile = "pKUNFF306.png",
+                 drawingsize = (1100, 1000),
+                 annotations = annotations,
+                 colors = cdict,
+                 genegroups = genegroups,
+                 title = "pKUNFF306")
+```

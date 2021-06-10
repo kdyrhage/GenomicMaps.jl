@@ -101,7 +101,7 @@ Some keywords that can be given to `drawgenome` to customise the output are:
 
 ## Plasmid maps
 
-![Example plasmid](https://raw.githubusercontent.com/kdyrhage/GenomicMaps.jl/assets/pKUNFF306.png?sanitize=true)
+![Example plasmid](https://raw.githubusercontent.com/kdyrhage/GenomicMaps.jl/assets/pKUNFF306.png)
 
 ```julia
 using GenomicAnnotations

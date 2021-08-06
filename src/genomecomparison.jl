@@ -14,6 +14,10 @@ function getsizes(genomes, regions, chrpadding, regionpadding)
     sizes
 end
 
+function getpoint()
+    lpoint = rpoint + Point((xmax-rightmargin-leftmargin) * relsize(chrpadding), 0)
+end
+
 
 """
     compareregions(chrs; kwargs...)
@@ -28,6 +32,7 @@ Some useful supported kwargs are:
 * matchpadding      Padding in pixels between the chromosome and the bands representing matches.
 * drawgenes         Bool specifying whether or not to draw CDSs.
 * colorfunction     Function that takes a `Gene` as input, and gives a color as output. Defaults to `g -> "lightgrey"`
+* textfunction      Function that takes a `Gene` as input, and gives a `String` as output. The returned string is shown above the given gene.
 * genethickness     Size of the gene.
 """
 compareregions(chrs::AbstractVector{C}; kwargs...) where C <: GenomicAnnotations.Record = compareregions([vcat(c...) for c in chrs]; kwargs...)
@@ -44,14 +49,13 @@ function compareregions(genomes::AbstractVector;
         decorations::AbstractDict = Dict(),
         matchpadding = 0,
         colorfunction = g -> "lightgrey",
+        textfunction = nothing,
+        genetextoffset = 10,
         drawgenes = false,
         genethickness = 10,
         matches = [])
     xmax, ymax = drawingdimensions(drawingsize)
     drawing = Drawing(xmax, ymax, outfile)
-    # leftmargin = rightmargin = 10
-    # topmargin = 50
-    # bottommargin = 10
     leftmargin, rightmargin, topmargin, bottommargin = margins
     genomesizes = getsizes(genomes, regions, chrpadding, regionpadding)
     maxgenomesize = maximum(genomesizes)
@@ -69,13 +73,13 @@ function compareregions(genomes::AbstractVector;
             end
         end
     end
-    function cumpos(chrs, pos)
+    function cumpos(chrs, chrname, pos)
         res = -chrpadding
         for chr in chrs
             res += chrpadding - regionpadding
             R = get(regions, chr, [eachindex(chr.sequence)])
             for region in R
-                if pos in region
+                if chr == chrname && pos in region
                     res += regionpadding + pos - first(region)
                     return res
                 else
@@ -93,9 +97,13 @@ function compareregions(genomes::AbstractVector;
         R = get(regions, chr, [eachindex(chr.sequence)])
         r = findfirst(r -> pos in r, R)
         isnothing(r) && return nothing
-        relpos = cumpos(genomes[i], pos)
+        relpos = cumpos(genomes[i], chr, pos)
         lpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), (1-relsize(genomesizes[i])) / 2)
         rpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), 1 - ((1-relsize(genomesizes[i])) / 2))
+        # rpoint = lpoint + Point((xmax-rightmargin-leftmargin) * relsize(R), 0)
+        if chr.name == "ExE"
+            return between(lpoint, rpoint, relpos / genomesizes[i])
+        end
         between(lpoint, rpoint, relpos / genomesizes[i])
     end
     function getpoints(chr, p1, p2)
@@ -168,9 +176,9 @@ function compareregions(genomes::AbstractVector;
                 if drawgenes
                     p = (;arrowwidth = genethickness)
                     for gene in @genes(chr, CDS, !isempty(intersect(locus(gene).position, region)))
+                        start = getpoint(chr, locus(gene).position.start)
+                        stop = getpoint(chr, locus(gene).position.stop)
                         if locus(gene).strand == '+'
-                            start = getpoint(chr, locus(gene).position.start)
-                            stop = getpoint(chr, locus(gene).position.stop)
                             if isnothing(start) && isnothing(stop)
                                 partialarrow_mid(p, lpoint, rpoint, colorfunction(gene))
                             elseif isnothing(start)
@@ -181,8 +189,6 @@ function compareregions(genomes::AbstractVector;
                                 genearrow(p, start, stop, colorfunction(gene))
                             end
                         elseif locus(gene).strand == '-'
-                            start = getpoint(chr, locus(gene).position.start)
-                            stop = getpoint(chr, locus(gene).position.stop)
                             if isnothing(start) && isnothing(stop)
                                 partialarrow_mid(p, lpoint, rpoint, colorfunction(gene))
                             elseif isnothing(start)
@@ -191,6 +197,15 @@ function compareregions(genomes::AbstractVector;
                                 partialarrow_stop(p, rpoint, start, colorfunction(gene))
                             else
                                 genearrow(p, stop, start, colorfunction(gene))
+                            end
+                        end
+                        ## Draw gene text
+                        if textfunction isa Function
+                            t = textfunction(gene)
+                            if !isnothing(t) && !isempty(t)
+                                isnothing(start) && (start = lpoint)
+                                isnothing(stop) && (stop = rpoint)
+                                text(t, midpoint(start, stop) - Point(0, genetextoffset), halign = :center, valign = :bottom)
                             end
                         end
                     end

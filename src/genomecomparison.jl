@@ -100,10 +100,6 @@ function compareregions(genomes::AbstractVector;
         relpos = cumpos(genomes[i], chr, pos)
         lpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), (1-relsize(genomesizes[i])) / 2)
         rpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), 1 - ((1-relsize(genomesizes[i])) / 2))
-        # rpoint = lpoint + Point((xmax-rightmargin-leftmargin) * relsize(R), 0)
-        if chr.name == "ExE"
-            return between(lpoint, rpoint, relpos / genomesizes[i])
-        end
         between(lpoint, rpoint, relpos / genomesizes[i])
     end
     function getpoints(chr, p1, p2)

@@ -30,7 +30,7 @@ Some useful supported kwargs are:
 * decorations       A `Dict` with `GenomicAnnotations.Record`s as keys, and `Dict`s as values. The nested `Dict`s have `UnitRange`s as keys (representing chromosome positions) and `NamedTuple`s as values. The `NamedTuple`s can have the fields `color`, `thickness`, and `strand (:+, :-, or :X)`.
 * matches           A table (e.g. `Matrix` or `DataFrame`) containing BLAST hits, with columns corresponding to the output from BLAST with the parameter "-outfmt 6".
 * matchpadding      Padding in pixels between the chromosome and the bands representing matches.
-* drawgenes         Bool specifying whether or not to draw CDSs.
+* drawgenes         Bool specifying whether or not to draw CDSs. Can also be a `Function` that takesa `Gene` as input and returns a `Bool`.
 * colorfunction     Function that takes a `Gene` as input, and gives a color as output. Defaults to `g -> "lightgrey"`
 * textfunction      Function that takes a `Gene` as input, and gives a `String` as output. The returned string is shown above the given gene.
 * genethickness     Size of the gene.
@@ -169,9 +169,10 @@ function compareregions(genomes::AbstractVector;
                     end
                 end
                 ## Draw genes if applicable
-                if drawgenes
+                if drawgenes != false
                     p = (;arrowwidth = genethickness)
-                    for gene in @genes(chr, CDS, !isempty(intersect(locus(gene).position, region)))
+                    drawfunction(gene) = drawgenes isa Bool ? feature(gene) == :CDS : drawgenes(gene)
+                    for gene in @genes(chr, drawfunction(gene), !isempty(intersect(locus(gene).position, region)))
                         start = getpoint(chr, locus(gene).position.start)
                         stop = getpoint(chr, locus(gene).position.stop)
                         if locus(gene).strand == '+'

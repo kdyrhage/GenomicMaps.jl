@@ -66,6 +66,7 @@ function compareregions(genomes::AbstractVector;
         drawpositions::Bool = false,
         centers::AbstractDict = Dict(),
         decorations::AbstractDict = Dict(),
+        reverseregions::AbstractDict = Dict(),
         matchpadding = 0,
         matchcolor = (RGBA(0.5,0,0,0.3), RGBA(0,0,0.5,0.3)),
         colorfunction = g -> "lightgrey",
@@ -110,14 +111,18 @@ function compareregions(genomes::AbstractVector;
             end
         end
     end
-    function cumpos(chrs, chrname, pos)
+    function cumpos(chrs, chrname, pos, rev = false)
         res = -chrpadding
         for chr in chrs
             res += chrpadding - regionpadding
             R = get(regions, chr, [eachindex(chr.sequence)])
             for region in R
                 if chr == chrname && pos in region
-                    res += regionpadding + pos - first(region)
+                    if rev
+                        res += regionpadding + last(region) - (pos - first(region)) - first(region)
+                    else
+                        res += regionpadding + pos - first(region)
+                    end
                     return res
                 else
                     res += regionpadding + length(region)
@@ -126,15 +131,15 @@ function compareregions(genomes::AbstractVector;
         end
         res
     end
-    getpoint(chrname::AbstractString, pos) = getpoint(getchr(chrname), pos)
-    function getpoint(chr, pos)
+    getpoint(chrname::AbstractString, pos, rev = false) = getpoint(getchr(chrname), pos, rev)
+    function getpoint(chr, pos, rev = false)
         i = findfirst(chrs -> chr in chrs, genomes)
         y = topmargin + (i-.5) * (ymax - topmargin - bottommargin) / length(genomes)
         j = findfirst(==(chr), genomes[i])
         R = get(regions, chr, [eachindex(chr.sequence)])
         r = findfirst(r -> pos in r, R)
         isnothing(r) && return nothing
-        relpos = cumpos(genomes[i], chr, pos)
+        relpos = cumpos(genomes[i], chr, pos, rev)
         lpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), (1-relsize(genomesizes[i])) / 2)
         rpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), 1 - ((1-relsize(genomesizes[i])) / 2))
         between(lpoint, rpoint, relpos / genomesizes[i])
@@ -175,19 +180,21 @@ function compareregions(genomes::AbstractVector;
     end
     setcolor("black")
     ## draw genome lines and decorations
-    for (i, chrs) in enumerate(genomes)
-        y = topmargin + (i-.5) * (ymax - topmargin - bottommargin) / length(genomes)
-        genomerelsize = relsize(genomesizes[i])
+    for (ci, chrs) in enumerate(genomes)
+        y = topmargin + (ci-.5) * (ymax - topmargin - bottommargin) / length(genomes)
+        genomerelsize = relsize(genomesizes[ci])
         lpoint = between(Point(leftmargin, y), Point(xmax - rightmargin, y), (1-genomerelsize) / 2)
         ## write name
         fontsize(namesfontsize)
-        text(names[i], Point(10, y), halign = :left, valign = :middle)
+        text(names[ci], Point(10, y), halign = :left, valign = :middle)
         for chr in chrs
             R = get(regions, chr, [eachindex(chr.sequence)])
             dec = get(decorations, chr, [])
             for (i, region) in enumerate(R)
-                lpoint = getpoint(chr, first(region))
-                rpoint = getpoint(chr, region[end])
+                rev = region in get(reverseregions, chr, [])
+                revsign = rev ? -1 : 1
+                lpoint = getpoint(chr, first(region), rev)
+                rpoint = getpoint(chr, region[end], rev)
                 setlinecap("butt")
                 line(lpoint, rpoint, :stroke)
                 ## Write positions
@@ -217,9 +224,9 @@ function compareregions(genomes::AbstractVector;
                             drpoint = between(lpoint, rpoint, last(dregion) / length(region))
                             strand = get(d, :strand, :X)
                             if strand == :+
-                                box(dlpoint, drpoint - Point(0, thickness), :fill)
+                                box(dlpoint, drpoint - revsign*Point(0, thickness), :fill)
                             elseif strand == :-
-                                box(dlpoint, drpoint + Point(0, thickness), :fill)
+                                box(dlpoint, drpoint + revsign*Point(0, thickness), :fill)
                             else
                                 box(dlpoint - Point(0, thickness), drpoint + Point(0, thickness), :fill)
                             end
@@ -233,8 +240,8 @@ function compareregions(genomes::AbstractVector;
                     p = (;arrowwidth = genethickness, genelinethickness = genelinethickness)
                     drawfunction(gene) = drawgenes isa Bool ? feature(gene) == :CDS : drawgenes(gene)
                     for gene in @genes(chr, drawfunction(gene), !isempty(intersect(locus(gene).position, region)))
-                        start = getpoint(chr, locus(gene).position.start)
-                        stop = getpoint(chr, locus(gene).position.stop)
+                        start = getpoint(chr, locus(gene).position.start, rev)
+                        stop = getpoint(chr, locus(gene).position.stop, rev)
                         !drawpartialgenes && (isnothing(start) || isnothing(stop)) && @goto out
                         box(lpoint - Point(0, 50), rpoint + Point(0, 50), :clip)
                         if locus(gene).strand == '+'
@@ -251,8 +258,8 @@ function compareregions(genomes::AbstractVector;
                     end
                     ## Draw gene text
                     for gene in @genes(chr, drawfunction(gene), !isempty(intersect(locus(gene).position, region)))
-                        start = getpoint(chr, locus(gene).position.start)
-                        stop = getpoint(chr, locus(gene).position.stop)
+                        start = getpoint(chr, locus(gene).position.start, rev)
+                        stop = getpoint(chr, locus(gene).position.stop, rev)
                         !drawpartialgenes && (isnothing(start) || isnothing(stop)) && @goto out_text
                         if textfunction isa Function
                             t = textfunction(gene)

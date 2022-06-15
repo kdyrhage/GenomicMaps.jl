@@ -3,7 +3,7 @@ const arrowheadlength = 13
 const strokethickness = 1.0
 
 
-function genearrow(p, start, stop, colour)
+function genearrow(p, start, stop, colour, linecolor)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -19,14 +19,17 @@ function genearrow(p, start, stop, colour)
         Point(0, p[:arrowwidth] / 2),
         Point(0, -p[:arrowwidth] / 2)
     ]
-    poly(points, :strokepreserve)
+    poly(points, :path)
     setcolor(colour)
-    fillpath()
+    fillpreserve()
+    setline(get(p, :genelinethickness, 1))
+    setcolor(linecolor)
+    strokepath()
     grestore()
 end
 
 
-function partialarrow_start(p, start, stop, colour)
+function partialarrow_start(p, start, stop, colour, linecolor)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -38,14 +41,17 @@ function partialarrow_start(p, start, stop, colour)
         Point(linelength, p[:arrowwidth] / 2),
         Point(0, p[:arrowwidth] / 2)
     ]
-    poly(points, :strokepreserve)
+    poly(points, :path)
     setcolor(colour)
-    fillpath()
+    fillpreserve()
+    setline(get(p, :genelinethickness, 1))
+    setcolor(linecolor)
+    strokepath()
     grestore()
 end
 
 
-function partialarrow_stop(p, start, stop, colour)
+function partialarrow_stop(p, start, stop, colour, linecolor)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
@@ -60,24 +66,36 @@ function partialarrow_stop(p, start, stop, colour)
         Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), p[:arrowwidth] / 2),
         Point(0, p[:arrowwidth] / 2)
     ]
-    poly(points, :strokepreserve)
+    poly(points, :path)
     setcolor(colour)
-    fillpath()
+    fillpreserve()
+    setline(get(p, :genelinethickness, 1))
+    setcolor(linecolor)
+    strokepath()
     grestore()
 end
 
 
-function partialarrow_mid(p, start, stop, colour)
+function partialarrow_mid(p, start, stop, colour, linecolor)
     gsave()
     Luxor.translate(start.x, start.y)
     combinedvector = stop - start
     rotate(atan(combinedvector.y, combinedvector.x))
     linelength = sqrt(combinedvector.x^2 + combinedvector.y^2)
+    points = [Point(0, -p[:arrowwidth] / 2),
+              Point(linelength, -p[:arrowwidth] / 2), 
+              Point(linelength, p[:arrowwidth] / 2),
+              Point(0, p[:arrowwidth] / 2)]
+    setcolor(colour)
+    poly(points, :fill)
+    newpath()
     points = [Point(0, -p[:arrowwidth] / 2), Point(linelength, -p[:arrowwidth] / 2)]
-    poly(points, :stroke)
-    strokepath()
+    poly(points, :path)
+    newsubpath()
     points = [Point(linelength, p[:arrowwidth] / 2), Point(0, p[:arrowwidth] / 2)]
-    poly(points, :stroke)
+    poly(points, :path)
+    setline(get(p, :genelinethickness, 1))
+    setcolor(linecolor)
     strokepath()
     grestore()
 end

@@ -9,16 +9,28 @@ function genearrow(p, start, stop, colour, linecolor)
     combinedvector = stop - start
     rotate(atan(combinedvector.y, combinedvector.x))
     arrowlength = sqrt(combinedvector.x^2 + combinedvector.y^2)
-    points = [
-        Point(0, -p[:arrowwidth] / 2),
-        Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), -p[:arrowwidth] / 2),
-        Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), -arrowheadlength * sin(arrowheadangle)),
-        Point(arrowlength, 0),
-        Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), arrowheadlength * sin(arrowheadangle)),
-        Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), p[:arrowwidth] / 2),
-        Point(0, p[:arrowwidth] / 2),
-        Point(0, -p[:arrowwidth] / 2)
-    ]
+    if arrowlength - arrowheadlength * cos(arrowheadangle) < 0
+        points = [
+            Point(0, 0),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), -p[:arrowwidth] / 2),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), -arrowheadlength * sin(arrowheadangle)),
+            Point(arrowlength, 0),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), arrowheadlength * sin(arrowheadangle)),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), p[:arrowwidth] / 2),
+            Point(0, 0),
+        ]
+    else
+        points = [
+            Point(0, -p[:arrowwidth] / 2),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), -p[:arrowwidth] / 2),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), -arrowheadlength * sin(arrowheadangle)),
+            Point(arrowlength, 0),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), arrowheadlength * sin(arrowheadangle)),
+            Point(arrowlength, 0) + Point(-arrowheadlength * cos(arrowheadangle), p[:arrowwidth] / 2),
+            Point(0, p[:arrowwidth] / 2),
+            Point(0, -p[:arrowwidth] / 2)
+        ]
+    end
     poly(points, :path)
     setcolor(colour)
     fillpreserve()

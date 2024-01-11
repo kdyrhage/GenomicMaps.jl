@@ -84,9 +84,9 @@ function drawgene(p, gene; colours = [p[:defaultcolour]])
     (p1, p2) = genecoordinates(p, gene)
     if p1.y == p2.y # The gene fits on one line
         if iscomplement(gene)
-            striped(genearrow, p, p2, p1, colours)
+            striped(genearrow, p, p2, p1, colours, "black")
         else
-            striped(genearrow, p, p1, p2, colours)
+            striped(genearrow, p, p1, p2, colours, "black")
         end
     else    # The gene does not fit on one line
         position = mean(locus(gene).position)
